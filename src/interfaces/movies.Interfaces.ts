@@ -1,25 +1,7 @@
-import { QueryResult } from "pg"
+import { movieSchema, returnMovieSchema, returnMultipleMoviesSchema, updateMovieSchema } from "../schemas/movie.schemas";
+import { z } from "zod";
 
-export interface iMovie {
-    name: string,
-    description?: string | null,
-    duration: number,
-    price: number
-}
-
-export interface iMovieResponse extends iMovie {
-
-    id: number
-}
-
-export interface iMoviePagination {
-    prevPage: string | null,
-    nextPage: string | null,
-    count: number,
-    data: iMovieResponse[]
-}
-
-
-export type itemMovieRequiredKeys = "name" | "description" | "duration" | "price"
-
-export type movieResult = QueryResult<iMovieResponse> 
+export type iMovie = z.infer<typeof movieSchema>
+export type iMovieReturn = z.infer<typeof returnMovieSchema>
+export type iMoviesReturn = z.infer<typeof returnMultipleMoviesSchema>
+export type iMovieUpdade = z.infer<typeof updateMovieSchema>

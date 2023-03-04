@@ -1,16 +1,16 @@
 import { Router } from "express";
-import { createMovieControllers, allListMoviesControllers, updateMovieControllers, deleteMovieControllers } from "../controllers/movies.controllers";
-import { verifyMovieIdExists } from "../middlewares/verifyIdMovieExists.middleware";
-import { verifyMovieNameExists } from "../middlewares/verifyNameMovie.middleware";
-
+import { createMovieController, deleteMovieController, listMoviesController, updadeMovieController } from "../controllers/movies.controllers";
+import { ensureDataIsValidMiddleware } from "../middlewares/ensureDataIsValid.middleware";
+import { checkIfIdMovieExistsMiddleware } from "../middlewares/verifyIdMovieExists.middleware";
+import { movieSchema } from "../schemas/movie.schemas";
 
 
 const moviesRoutes:Router = Router() 
 
-moviesRoutes.post("",verifyMovieNameExists, createMovieControllers)
-moviesRoutes.get("", allListMoviesControllers)
-moviesRoutes.patch("/:id",verifyMovieIdExists, verifyMovieNameExists, updateMovieControllers)
-moviesRoutes.delete("/:id",verifyMovieIdExists, deleteMovieControllers)
+moviesRoutes.post('', ensureDataIsValidMiddleware(movieSchema), createMovieController)
+moviesRoutes.get('', listMoviesController )
+moviesRoutes.patch('/:id', ensureDataIsValidMiddleware(movieSchema), checkIfIdMovieExistsMiddleware, updadeMovieController )
+moviesRoutes.delete('/:id',checkIfIdMovieExistsMiddleware, deleteMovieController )
 
 export default moviesRoutes
 

@@ -1,49 +1,49 @@
-import { Request, Response } from "express";
-import { QueryConfig } from "pg";
-import { client } from "../../database";
-import { iMoviePagination, iMovieResponse, movieResult } from "../../interfaces/movies.Interfaces";
-import { allMoviesListSchema } from "../../schemas/movies.schemas";
+import { Repository } from "typeorm";
+import { AppDataSource } from "../../data-source";
+import { Movie } from "../../entities";
+import { iMoviesReturn } from "../../interfaces/movies.Interfaces";
+import { returnMultipleMoviesSchema } from "../../schemas/movie.schemas";
 
+export const listMovieService = async (): Promise<iMoviesReturn> => {
+    const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)
 
-export async function allListMoviesService(a:any):Promise<iMoviePagination>{
+    const findMovies: Array<Movie> = await movieRepository.find()
 
-    const {order, sort, page, perPage} = a.query
+    const movies = returnMultipleMoviesSchema.parse(findMovies)
 
-    const perPageValue:any = perPage === undefined || +perPage < 1 || typeof +perPage !== "number" ? 5 : +perPage
-    const pageValue:any = page === undefined || +page < 1 || typeof +page !== "number" ? 1 : +page
-
-    const pageOffset = perPageValue * (pageValue-1)
-    
-    const queryString: string = 
-    `
-    SELECT 
-        *
-    FROM 
-        movies
-        LIMIT $1 OFFSET $2    
-    `;
-    
-    const queryConfig:QueryConfig = {
-        text:queryString,
-        values: [perPageValue, pageOffset]
-    }
-    
-    const queryResult:movieResult = await client.query(queryConfig)
-
-    const moviesPagination: iMoviePagination = {
-    
-        prevPage: pageValue <= 1 ? null: `http://localhost:3000/movies?page=${pageValue-1}&perPage=${perPageValue}`,
-        nextPage: perPageValue > queryResult.rowCount ? null: `http://localhost:3000/movies?page=${pageValue+1}&perPage=${perPageValue}`,
-        count: queryResult.rowCount,
-        data: queryResult.rows
-    }
-
-    return moviesPagination
+    return movies
 }
 
 
 
-    
 
-    
-    //return response.status(200).json(moviesPagination)
+// interface PaginationOptions {
+//   page: number;
+//   perPage: number;
+//   order: "ASC" | "DESC";
+//   sort: keyof Movie;
+// }
+
+// export class MoviesService {
+//   async getMovies(
+//     options: PaginationOptions
+//   ): Promise<{ prevPage: number | null; nextPage: number | null; count: number; data: Movie[] }> {
+//     const movieRepository = getRepository(Movie);
+//     const { page, perPage, order, sort } = options;
+//     const [movies, count] = await movieRepository.findAndCount({
+//       skip: (page - 1) * perPage,
+//       take: perPage,
+//       order: { [sort]: order },
+//     });
+
+//     const prevPage = page > 1 ? page - 1 : null;
+//     const nextPage = page * perPage < count ? page + 1 : null;
+
+//     return {
+//       prevPage,
+//       nextPage,
+//       count,
+//       data: movies,
+//     };
+//   }
+// }

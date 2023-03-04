@@ -1,26 +1,19 @@
-import { Request, Response } from "express";
-import { QueryConfig } from "pg";
-import format from "pg-format";
-import { client } from "../../database";
-import { iMovieResponse, iMovie, movieResult } from "../../interfaces/movies.Interfaces";
-import { moviesResponseSchema } from "../../schemas/movies.schemas";
+import { iMovie, iMovieReturn } from "../../interfaces/movies.Interfaces";
+import { AppDataSource } from "../../data-source";
+import { Movie } from "../../entities";
+import { Repository } from "typeorm";
+import { returnMovieSchema } from "../../schemas/movie.schemas";
 
-export async function createMovieService(movieDate:iMovie): Promise<iMovieResponse>{
+export const createMovieService = async ( movieData: iMovie ): Promise<iMovieReturn> => {
 
-    const queryString: string = format(
-        `
-        INSERT INTO 
-            movies(%I)
-        VALUES 
-            (%L)
-        RETURNING *;     
-        `,
-        Object.keys(movieDate),
-        Object.values(movieDate)
-    ) 
+    const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)  
 
-    const queryResult:movieResult = await client.query(queryString)
-    const newMovie:iMovieResponse = moviesResponseSchema.parse(queryResult.rows[0])
+    const movie: Movie = movieRepository.create(movieData)
+
+    await movieRepository.save(movie)
+
+    console.log(movie)
+    const newMovie = returnMovieSchema.parse(movie)
 
     return newMovie
 }

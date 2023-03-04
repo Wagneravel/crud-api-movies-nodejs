@@ -1,31 +1,21 @@
-import { Request, Response } from "express";
-import { QueryConfig } from "pg";
-import format from "pg-format";
-import { object } from "zod";
-import { client } from "../../database";
-import { iMovieResponse, movieResult } from "../../interfaces/movies.Interfaces";
-import { moviesResponseSchema } from "../../schemas/movies.schemas";
+import { Repository } from "typeorm"
+import { AppDataSource } from "../../data-source"
+import { Movie } from "../../entities"
 
 
-export async function deleteMovieService(id:number){
-    
-    const queryString: string = format(
-        `
-        UPDATE 
-            movies
-        WHERE 
-            id = $1
-        RETURNING *;     
-        `,
-    ) 
 
-    const queryConfig:QueryConfig = {
-        text:queryString,
-        values:[id]
-    }
+export const deleteMovieService = async (idMovie: number): Promise<void> => {
 
-    const queryResult:movieResult = await client.query(queryConfig)
-    const deleteMovie:iMovieResponse = moviesResponseSchema.parse(queryResult.rows[0])
+    const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)
 
-    return deleteMovie
+    const movie = await movieRepository.findOne({
+        where: {
+            id: idMovie
+        }
+    })
+
+    await movieRepository.remove(movie!)
+
+
+
 }

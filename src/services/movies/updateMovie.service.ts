@@ -1,44 +1,29 @@
-import { Request, Response } from "express";
-import { QueryConfig } from "pg";
-import format from "pg-format";
-import { client } from "../../database";
-import { AppError } from "../../erros";
-import { iMovieResponse, movieResult } from "../../interfaces/movies.Interfaces";
-import { moviesResponseSchema, movieUpdateSchema } from "../../schemas/movies.schemas";
+import { Repository } from "typeorm"
+import { AppDataSource } from "../../data-source"
+import { Movie } from "../../entities"
+import { iMovieReturn } from "../../interfaces/movies.Interfaces"
+import { returnMovieSchema } from "../../schemas/movie.schemas"
 
 
-export async function updateMovieService(movie:movieResult, id:number){
+
+export const updateMovieService = async (movieData: any, idMovie: number): Promise<iMovieReturn> => {
+
+    const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)
+
+    const oldMovieData = await movieRepository.findOneBy({
+        id: idMovie
+    })
     
-    const updatebleKeys = movieUpdateSchema.keyof().options
-
-    if(!Object.keys(movie).length){
-        throw new AppError(`At least one of those keys must be send: ${updatebleKeys}`)
-    }
-
-    const queryString: string = format(
-        `
-        UPDATE 
-            movies
-        SET
-            (%I) = ROW(%L)
-        WHERE 
-            id = $1
-        RETURNING *;     
-        `,
-        Object.keys(movie),
-        Object.values(movie)
+    const movie = movieRepository.create({
+        ...oldMovieData,
+        ...movieData
         
-    ) 
+    })
 
-    const queryConfig:QueryConfig = {
-        text:queryString,
-        values:[id]
-    }
+    await movieRepository.save(movie)
 
+    const updateMovie = returnMovieSchema.parse(movie)
 
-    const queryResult:movieResult = await client.query(queryConfig)
-    const updatedMovie:iMovieResponse = moviesResponseSchema.parse(queryResult.rows[0])
+    return updateMovie
 
-
-    return updatedMovie
 }

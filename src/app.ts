@@ -1,6 +1,8 @@
+import 'express-async-errors'
 import express, { Application } from "express"
-import { errorHandler } from "./erros"
+import { errorHandler } from "./errors"
 import moviesRoutes from "./routers/movies.routes"
+
 
 const app:Application = express()
 app.use(express.json())
