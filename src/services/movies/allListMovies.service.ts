@@ -8,14 +8,14 @@ export const listMoviesService = async (query:any, baseUrl:string): Promise<Pagi
 
     const { page, perPage, sort, order } = query
 
-    const perPageValue:any = perPage === undefined || +perPage < 1 || isNaN(perPage) ? 5 : +perPage
+    const perPageValue:any = perPage === undefined || +perPage < 1 || +perPage > 5 && !page  || isNaN(perPage) ? 5 : +perPage
     const pageValue:any = page === undefined || +page < 1 || isNaN(page) ? 1 : +page
   
     const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie);
   
-    const orderDirection = !order ? "ASC" : order.toUpperCase() ;
+    const orderDirection = !order || !sort && order ? "ASC" : order.toUpperCase()  ;
     
-    const orderBy = sort === "price" && orderDirection ? {price:orderDirection} :  sort === "duration" && orderDirection ? {duration: orderDirection} : {id: orderDirection};
+    const orderBy = sort === "price" ? {price:orderDirection} :  sort === "duration" ? {duration: orderDirection} : {id: orderDirection};
   
     const totalCount = await movieRepository.count();
     const skip = (pageValue - 1) * perPageValue;
