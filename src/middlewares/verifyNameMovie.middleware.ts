@@ -1,16 +1,23 @@
-// import { Request, Response, NextFunction } from "express";
-// import { getManager } from "typeorm";
-// import { Movie } from "../entities";
+import { Request, Response, NextFunction } from "express";
+import { Repository } from "typeorm";
+import { AppDataSource } from "../data-source";
+import { Movie } from "../entities";
+import { AppError } from "../errors";
 
-// export const checkMovieNameExistsMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-//   const { name } = req.body;
+export const checkIfNameMovieExistsMiddleware = async (req: Request, res: Response, next: NextFunction):Promise<void> => {
 
-//   const movieRepository = getManager().getRepository(Movie);
-//   const existingMovie = await movieRepository.findOne({ where: { name } });
+    const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)
+  
+  
+    const nameMovie = await movieRepository.findOne({
+        where: {
+            name: req.body.name
+        }
+    });
 
-//   if (existingMovie) {
-//     return res.status(409).json({ message: "Movie with this name already exists." });
-//   }
+    if (nameMovie) {
+        throw new AppError('this name already exists', 404)
+    }
+    return  next();
 
-//   return next();
-// };
+};

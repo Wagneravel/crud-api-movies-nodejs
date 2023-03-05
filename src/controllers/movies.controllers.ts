@@ -33,12 +33,15 @@ export const deleteMovieController = async (req:Request, res: Response) => {
 
 export const updadeMovieController = async (req:Request, res: Response) => {
 
-    const movieData = req.body
-
     const idMovie = parseInt(req.params.id)
+
+    
+    
+    const movieData = req.body
 
     const updatedMovie = await updateMovieService(movieData, idMovie)
 
     return res.status(200).json(updatedMovie)
   
 }
+
