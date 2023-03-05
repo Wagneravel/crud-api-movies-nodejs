@@ -12,7 +12,6 @@ export const createMovieService = async ( movieData: iMovie ): Promise<iMovieRet
 
     await movieRepository.save(movie)
 
-    console.log(movie)
     const newMovie = returnMovieSchema.parse(movie)
 
     return newMovie

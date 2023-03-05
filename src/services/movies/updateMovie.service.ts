@@ -7,64 +7,28 @@ import { returnMovieSchema } from "../../schemas/movie.schemas"
 
 
 
-// export const updateMovieService = async (newMovieData: iMovieUpdade, idMovie: number): Promise<iMovieReturn> => {
+export const updateMovieService = async (newMovieData: any, idMovie: number): Promise<iMovieReturn> => {
 
-//     const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)
-
-//     const oldMovieData = await movieRepository.findOneBy({
-//         id: idMovie
-//     })
+    if(!Object.keys(newMovieData).length){
+        console.log(newMovieData)
+        throw new AppError('Body cannot be empty, must contain at least description, name, price or duration!')
+        
+    }
     
-//     const movie = movieRepository.create({
-//         ...oldMovieData,
-//         ...newMovieData
-//     })
-
-//     await movieRepository.save(movie)
-
-//     const updateMovie = returnMovieSchema.parse(movie)
-
-//     return updateMovie
-// }
-
-export const updateMovieService = async (newMovieData: iMovieUpdade, idMovie: number): Promise<iMovieReturn> => {
-
     const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)
 
     const oldMovieData = await movieRepository.findOneBy({
         id: idMovie
     })
-
-    console.log(oldMovieData)
-    console.log(newMovieData)
     
-    if (!oldMovieData) {
-        throw new AppError('Movie not found', 404)
-    }
+    const movie = movieRepository.create({
+        ...oldMovieData,
+        ...newMovieData
+    })
 
-    // Atualiza apenas as chaves enviadas na solicitação
-    if (!newMovieData.name) {
-        oldMovieData.name = oldMovieData.name
-    }else{oldMovieData.name = newMovieData.name}
+    await movieRepository.save(movie)
 
-    if (!newMovieData.duration) {
-        oldMovieData.duration = oldMovieData.duration
-    }else{oldMovieData.duration = newMovieData.duration}
+    const updateMovie = returnMovieSchema.parse(movie)
 
-    if (!newMovieData.description) {
-        oldMovieData.description = oldMovieData.description
-    }else{oldMovieData.description = newMovieData.description}
-
-    if (!newMovieData.price) {
-        oldMovieData.price = oldMovieData.price
-    }else{oldMovieData.price = newMovieData.price}
-
-    
-    const novo = await movieRepository.save(oldMovieData)
-
-    console.log(novo)
-
-    const updatedMovie = returnMovieSchema.parse(novo)
-
-    return updatedMovie
+    return updateMovie
 }

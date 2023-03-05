@@ -8,6 +8,9 @@ export const checkIfNameMovieExistsMiddleware = async (req: Request, res: Respon
 
     const movieRepository: Repository<Movie> = AppDataSource.getRepository(Movie)
   
+    if(!req.body.name && req.method == "PATCH"){
+        return  next();
+    }
   
     const nameMovie = await movieRepository.findOne({
         where: {
@@ -16,7 +19,7 @@ export const checkIfNameMovieExistsMiddleware = async (req: Request, res: Respon
     });
 
     if (nameMovie) {
-        throw new AppError('this name already exists', 404)
+        throw new AppError('Movie already exists.', 409)
     }
     return  next();
 
